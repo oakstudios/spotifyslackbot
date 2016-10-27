@@ -584,7 +584,7 @@ function checkForTrackChange() {
 
             getArtworkUrlFromTrack(track, function(artworkUrl) {
                 bot.say({
-                    text: `> ${trackFormatSimple(track)} ${artworkUrl}`,
+                    text: `> ${trackFormatSimple(track)}\n> ${artworkUrl}`,
                     channel: channelId
                 });
             });
