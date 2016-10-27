@@ -217,7 +217,7 @@ controller.hears(['^status$'],'direct_message,direct_mention,mention', function(
         });
 });
 
-controller.hears(['next'],'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['next','skip'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.next(function(err, track){
         bot.reply(message, 'Skipping to the next track...');
     });
