@@ -67,10 +67,11 @@ controller.hears(['^help$'],'direct_message,direct_mention,mention', function(bo
         '\t⦿ *info* – _I will tell you about this track_\n'+
         '\t⦿ *detail* – _I will tell you more about this track_\n'+
         '\t⦿ *play* / *pause* – _plays or pauses the music_\n'+
-        '\t⦿ *play track* [track name], *play track* [track name] - [artist] – _plays a specific track_\n'+
-        '\t⦿ *play track* [track name] | [album] – _plays a specific track in the context of an album. You can add_ - [artist] _to either the track or the album to be more specific_'
-        // 'play album [album name], play album [album name] - artist – plays a specific album\n'+
-        // 'play playlist [playlist name] – plays a specific playlist\n'+
+        '\t⦿ *play* [spotify uri] – _plays a specific uri_\n'+
+        '\t⦿ *play track* [track name] - [optional artist name] – _plays a specific track_\n'+
+        '\t⦿ *play album* [album name] - [optional artist name] – _plays a specific album_\n'+
+        '\t⦿ *play artist* [artist name] – _plays a specific album_\n'+
+        '\t⦿ *play playlist* [playlist name] – _plays a specific playlist_\n'
     );
 });
 
@@ -267,103 +268,29 @@ controller.hears(['^play$','^resume$','^go$'],'direct_message,direct_mention,men
     });
 });
 
-
-let playTrackRegex = '^play track (.*)$';
-controller.hears(playTrackRegex,'direct_message,direct_mention,mention', function(bot, message) {
+let playURIRegex = '^(?:play )?<(.*)>$';
+controller.hears(playURIRegex,'direct_message,direct_mention,mention', function(bot, message) {
     // parse play string
-    let reg = new RegExp(playTrackRegex);
-    let track = reg.exec(message.text)[1];
+    let reg = new RegExp(playURIRegex);
+    let uri = reg.exec(message.text)[1];
 
-    var context, artist;
-
-    var contextSplit = track.split('|');
-    if(contextSplit.length > 1) {
-        // context found
-        track = contextSplit[0];
-        context = contextSplit[1]; // discard any additional contexts
-    }
-
-    var artistSplit = track.split('-');
-    if(artistSplit.length > 1) {
-        // artist found
-        track = artistSplit[0];
-        artist = artistSplit[1]; // discard any additional separators
-    }
-
-    let promises = [
-        searchFor(track+(artist ? ' - '+artist : ''), ['track'])
-    ];
-
-    if(context) {
-        let contextPromise = searchFor(context, ['album','playlist']).
-            then(results => { // update with full album data (including artists)
-                var albumIds = results.albums.items.map(album => album.id);
-                var deferred = q.defer();
-                getAlbumsFromIds(albumIds).then(albums => {
-                    results.albums.items = albums;
-                    deferred.resolve(results);
-                }).
-                catch(err => {
-                    deferred.reject(err);
-                });
-
-                return deferred.promise;
-            });
-
-        promises.push(contextPromise);
-    }
-
-    q.all(promises).
-    then(results => {
-        let parsedResult = parseSearchResultsForTrack(results[0], results[1], track, artist, context);
-        return parsedResult.length ? parsedResult : q.reject();
-    }).
-    then(results => {
-        if(results.length === 1) {
-            return playTrack(results[0]).
-                then(ok => {
-                    bot.reply(message, 'I couldn\'t find that track on that album, but playing my best guess for the track name anyway...');
-                });
-        }
-        else if(results.length === 2) {
-            return playTrack(results[0], results[1]).
-                then(ok => {
-                    bot.reply(message, 'No problem 👍');
-                });
-        }
-        else {
-            return q.reject();
-        }
-    }).
-    catch(err => {
-        console.log('Problem playing track: \"'+message.text+'\"', err);
-        bot.reply(message, 'Sorry, I\'m having trouble with that request 😢');
+    playTrack(uri).
+    then(ok => {
+        bot.reply(message, 'No problem 👍');
     });
-
 });
 
-let playAlbumRegex = '^play album (.*)$';
-controller.hears(playAlbumRegex,'direct_message,direct_mention,mention', function(bot, message) {
+let playTypeRegex = '^(?:play )?(playlist|artist|album|track) (.*)$';
+controller.hears(playTypeRegex,'direct_message,direct_mention,mention', function(bot, message) {
     // parse play string
-    let reg = new RegExp(playAlbumRegex);
-    let album = reg.exec(message.text)[1];
+    let reg = new RegExp(playTypeRegex);
+    let type = reg.exec(message.text)[1];
+    let query = reg.exec(message.text)[2];
 
-    var artist;
-
-    var artistSplit = album.split('-');
-    if(artistSplit.length > 1) {
-        // artist found
-        album = artistSplit[0];
-        artist = artistSplit[1]; // discard any additional separators
-    }
-
-    searchFor(album+(artist ? ' - '+artist : ''), ['album']).
+    searchFor(query, [type]).
     then(results => {
-        return parseSearchResultsForAlbum(results);
-    }).
-    then(results => {
-        if(results.length === 2) {
-            return playTrack(results[0], results[1]).
+        if(results[type+'s'].items.length > 0) {
+            return playTrack(results[type+'s'].items[0].uri).
                 then(ok => {
                     bot.reply(message, 'No problem 👍');
                 });
@@ -373,10 +300,9 @@ controller.hears(playAlbumRegex,'direct_message,direct_mention,mention', functio
         }
     }).
     catch(err => {
-        console.log('Problem playing album: \"'+message.text+'\"', err);
+        console.log('Problem playing '+type+': \"'+message.text+'\"', err);
         bot.reply(message, 'Sorry, I\'m having trouble with that request 😢');
     });
-
 });
 
 controller.hears(['^stop$','^pause$','^shut up$'],'direct_message,direct_mention,mention', function(bot, message) {
@@ -705,57 +631,6 @@ function searchFor(query, resultTypes) {
 
 
 /**
- * Parses the search results for a track (and optionally a context) for the correct URI based on the query text
- * @param {Object} trackResults
- * @param {Object | undefined} contextResults
- * @return {String[]} Array containing the track Uri (and context Uri, if provided)
- */
-function parseSearchResultsForTrack(trackResults, contextResults) {
-    let result = [];
-    if(trackResults.tracks.items.length) {
-        if(contextResults) {
-            trackResults.tracks.items.some(track => {
-                contextResults.albums.items.some(album => {
-                    if(track.album.uri === album.uri) {
-                        result.push(track.uri);
-                        result.push(album.uri);
-                        return true;
-                    }
-                });
-
-                if(result.length) {
-                    return true;
-                }
-            });
-
-            if(result.length) return result;
-
-        }
-
-        result.push(trackResults.tracks.items[0].uri);
-    }
-
-    return result;
-}
-
-
-/**
- * Uses the search results to construct an array of the first track on the album's URI and the album's URI
- * @param {Object} albumResults
- * @return {Promise} Resolved with Array containing the track Uri and album Uri
- */
-function parseSearchResultsForAlbum(albumResults) {
-    return getAlbumsFromIds([albumResults.albums.items[0].id]).
-    then(results => {
-        return [results[0].tracks.items[0].uri, results[0].uri];
-    }).
-    catch(err => {
-        return q.reject(err);
-    });
-}
-
-
-/**
  * Plays a track, optionally within a context
  */
 function playTrack(trackUri, contextUri) {
@@ -781,42 +656,6 @@ function playTrack(trackUri, contextUri) {
             }
         });
     }
-
-    return deferred.promise;
-}
-
-
-/**
- * Fetches a list of albums from IDs from the Spotify API
- * @param {String[]} albumIds Array of album IDs
- * @return {Promise} Resolved with array of complete album data
- */
-function getAlbumsFromIds(albumIds) {
-    let deferred = q.defer();
-    let reqUrl = 'https://api.spotify.com/v1/albums?ids='+albumIds.join(',');
-
-    var req = https.request(reqUrl, function(response) {
-        var str = '';
-
-        response.on('data', function (chunk) {
-            str += chunk;
-        });
-
-        response.on('end', function() {
-            var json = JSON.parse(str);
-            if(json && json.albums && json.albums.length) {
-                deferred.resolve(json.albums);
-            }
-            else {
-                deferred.reject('Bad response');
-            }
-        });
-    });
-    req.end();
-
-    req.on('error', function(e) {
-      console.error(e);
-    });
 
     return deferred.promise;
 }
