@@ -172,7 +172,7 @@ track = {
     spotify_url: 'spotify:track:3AhXZa8sUQht0UEdBJgpGc' }
 }
 */
-controller.hears(['what is this','what\'s this','^info$','^playing$','what is playing','what\'s playing'],'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['^info$','^playing$','^what','^who'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.getTrack(function(err, track){
         if(track) {
             lastTrackId = track.id;
@@ -185,15 +185,13 @@ controller.hears(['^detail$'],'direct_message,direct_mention,mention', function(
     Spotify.getTrack(function(err, track){
         if(track) {
             lastTrackId = track.id;
-            getArtworkUrlFromTrack(track, function(artworkUrl) {
-                bot.reply(message, trackFormatDetail(track)+"\n"+artworkUrl);
-            });
+            bot.reply(message, trackFormatDetail(track)+" "+track.spotify_url);
         }
     });
 });
 
 controller.hears(['^status$'],'direct_message,direct_mention,mention', function(bot, message) {
-    // shuffle, repeat, 
+    // shuffle, repeat,
     q.all([checkRunning(), getState(), checkRepeating(), checkShuffling()]).
         then(function(results) {
             var running = results[0],
