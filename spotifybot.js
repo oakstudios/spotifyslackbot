@@ -276,7 +276,7 @@ controller.hears(playURIRegex,'direct_message,direct_mention,mention', function(
 
     playTrack(uri).
     then(ok => {
-        bot.reply(message, 'No problem 👍');
+        addReaction(message, '+1');
     });
 });
 
@@ -292,7 +292,7 @@ controller.hears(playTypeRegex,'direct_message,direct_mention,mention', function
         if(results[type+'s'].items.length > 0) {
             return playTrack(results[type+'s'].items[0].uri).
                 then(ok => {
-                    bot.reply(message, 'No problem 👍');
+                    addReaction(message, '+1');
                 });
         }
         else {
@@ -746,6 +746,18 @@ function verifyChannel(channel) {
     }
 
     return false;
+}
+
+function addReaction(message, emoji) {
+    bot.api.reactions.add({
+        timestamp: message.ts,
+        channel: message.channel,
+        name: emoji,
+    }, function(err,res) {
+        if (err) {
+            bot.botkit.log("Failed to add emoji reaction :(",err);
+        }
+    });
 }
 
 init();
