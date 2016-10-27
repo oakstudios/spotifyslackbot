@@ -178,7 +178,7 @@ controller.hears(['^info$','^playing$','^what','^who'],'direct_message,direct_me
     Spotify.getTrack(function(err, track){
         if(track) {
             lastTrackId = track.id;
-            bot.reply(message,'This is ' + trackFormatSimple(track) + '!');
+            bot.reply(message, trackFormatSimple(track));
         }
     });
 });
@@ -462,7 +462,7 @@ function inviteMessage(inviter, channel) {
             lastTrackId = track.id;
             getArtworkUrlFromTrack(track, function(artworkUrl) {
                 bot.say({
-                    text: welcomeText+'Currently playing: '+trackFormatSimple(track),
+                    text: welcomeText+'Now playing '+trackFormatSimple(track),
                     channel: channel.id
                 });
             });
@@ -584,7 +584,7 @@ function checkForTrackChange() {
 
             getArtworkUrlFromTrack(track, function(artworkUrl) {
                 bot.say({
-                    text: `Now playing: ${trackFormatSimple(track)}\n${artworkUrl}`,
+                    text: `Now playing ${trackFormatSimple(track)}\n${artworkUrl}`,
                     channel: channelId
                 });
             });
