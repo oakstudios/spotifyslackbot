@@ -178,7 +178,7 @@ controller.hears(['^info$','^playing$','^what','^who'],'direct_message,direct_me
     Spotify.getTrack(function(err, track){
         if(track) {
             lastTrackId = track.id;
-            bot.reply(message, trackFormatSimple(track));
+            bot.reply(message, "> "+trackFormatSimple(track));
         }
     });
 });
@@ -187,7 +187,7 @@ controller.hears(['^detail$'],'direct_message,direct_mention,mention', function(
     Spotify.getTrack(function(err, track){
         if(track) {
             lastTrackId = track.id;
-            bot.reply(message, trackFormatDetail(track)+" "+track.spotify_url);
+            bot.reply(message, "> "+trackFormatDetail(track)+" "+track.spotify_url);
         }
     });
 });
@@ -462,7 +462,7 @@ function inviteMessage(inviter, channel) {
             lastTrackId = track.id;
             getArtworkUrlFromTrack(track, function(artworkUrl) {
                 bot.say({
-                    text: welcomeText+'Now playing '+trackFormatSimple(track),
+                    text: welcomeText+'> '+trackFormatSimple(track),
                     channel: channel.id
                 });
             });
@@ -584,7 +584,7 @@ function checkForTrackChange() {
 
             getArtworkUrlFromTrack(track, function(artworkUrl) {
                 bot.say({
-                    text: `Now playing ${trackFormatSimple(track)}\n${artworkUrl}`,
+                    text: `> ${trackFormatSimple(track)} ${artworkUrl}`,
                     channel: channelId
                 });
             });
