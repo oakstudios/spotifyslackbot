@@ -63,6 +63,8 @@ controller.hears(['^help$'],'direct_message,direct_mention,mention', function(bo
         '\t⦿ *start again* / *over* – _Missed the beginning of the track? No problem._\n'+
         '\t⦿ *volume up* / *down* – _increases / decreases the volume_\n'+
         '\t⦿ *set volume* [1-100] – _sets the volume_\n'+
+        '\t⦿ *shuffle* [on/off] – _toggles shuffle_\n'+
+        '\t⦿ *repeat* [on/off] – _toggles repeat_\n'+
         '\t⦿ *status* – _I will tell information about the Spotify player_\n'+
         '\t⦿ *info* – _I will tell you about this track_\n'+
         '\t⦿ *detail* – _I will tell you more about this track_\n'+
