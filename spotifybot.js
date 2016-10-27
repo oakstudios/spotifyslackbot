@@ -664,9 +664,9 @@ function playTrack(trackUri, contextUri) {
 let trackFormatSimple = track => {
     var out = '';
     if(track.name) {
-        out += `_${track.name}_`;
+        out += `“${track.name}”`;
         if(track.artist) {
-            out += ` by *${track.artist}*`;
+            out += ` by ${track.artist}`;
         }
     }
     return out;
@@ -675,12 +675,12 @@ let trackFormatSimple = track => {
 let trackFormatDetail = track => {
     var out = '';
     if(track.name) {
-        out += `_${track.name}_`;
+        out += `“${track.name}”`;
         if(track.artist) {
-            out += ` by _${track.artist}_`;
+            out += ` by ${track.artist}`;
         }
         if(track.album) {
-            out += ` is from the album *${track.album}*`;
+            out += ` from the album _${track.album}_`;
         }
     }
     return out;
