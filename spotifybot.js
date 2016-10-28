@@ -79,16 +79,7 @@ controller.hears(['^help$'],'direct_message,direct_mention,mention', function(bo
 
 controller.hears(['^hello$','^hi$'],'direct_message,direct_mention,mention',function(bot,message) {
 
-    bot.api.reactions.add({
-        timestamp: message.ts,
-        channel: message.channel,
-        name: 'radio',
-    }, function(err,res) {
-        if (err) {
-            bot.botkit.log("Failed to add emoji reaction :(",err);
-        }
-    });
-
+    addReaction(message, 'radio');
 
     controller.storage.users.get(message.user,function(err,user) {
         if (user && user.name) {
@@ -378,16 +369,8 @@ controller.hears('(?:set )?vol(?:ume)? (\\d+)','direct_message,direct_mention,me
             return;
         }
 
-        bot.api.reactions.add({
-            timestamp: message.ts,
-            channel: message.channel,
-            name: 'trollface',
-        }, function(err,res) {
-            if (err) {
-                bot.botkit.log("Failed to add emoji reaction :(",err);
-            }
-        });
-        bot.reply(message, 'Volume can be set from 0-100');
+        addReaction(message, 'trollface');
+        bot.reply(message, 'Volume can be set from 0–100');
     });
 });
 
