@@ -174,7 +174,7 @@ controller.hears(['^info$','^playing$','^what','^who'],'direct_message,direct_me
     });
 });
 
-controller.hears(['^detail( \\d+)?'],'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['^details?$'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.getTrack(function(err, track){
         if(track) {
             lastTrackId = track.id;
