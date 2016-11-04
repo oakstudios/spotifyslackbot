@@ -305,6 +305,21 @@ controller.hears(playTypeRegex,'direct_message,direct_mention,mention', function
     });
 });
 
+controller.hears(['toggle playback'],'direct_message,direct_mention,mention,ambient', function(bot, message) {
+    Spotify.getState(function(err, state){
+        if(state.state != 'playing') {
+            Spotify.play(function(){
+                bot.reply(message, 'Resuming playback...');
+            });
+            return;
+        }
+
+        Spotify.pause(function(){
+            bot.reply(message, 'Pausing playback...');
+        });
+    });
+});
+
 controller.hears(['^stop$','^pause$','^shut up$'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.getState(function(err, state){
         if(state.state != 'playing') {
