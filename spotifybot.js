@@ -212,7 +212,7 @@ controller.hears(['^status$'],'direct_message,direct_mention,mention', function(
 
 controller.hears(['next','skip'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.next(function(err, track){
-        bot.reply(message, 'Skipping to the next track...');
+        bot.reply(message, 'Skipping to the next track…');
     });
 });
 
@@ -227,7 +227,7 @@ controller.hears(['previous','prev'],'direct_message,direct_mention,mention', fu
                     Spotify.getTrack(function(err, track){
                         if(track) {
                             if(track.id !== currentTrack) {
-                                bot.reply(message, 'Skipping back to the previous track...');
+                                bot.reply(message, 'Skipping back to the previous track…');
                             }
                             else {
                                 previousTrack();
@@ -242,19 +242,19 @@ controller.hears(['previous','prev'],'direct_message,direct_mention,mention', fu
 
 controller.hears(['start (again|over)'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.jumpTo(0, function(err, track){
-        bot.reply(message, 'Going back to the start of this track...');
+        bot.reply(message, 'Going back to the start of this track…');
     });
 });
 
 controller.hears(['^play$','^resume$','^go$'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.getState(function(err, state){
         if(state.state == 'playing') {
-            bot.reply(message, 'Already playing...');
+            bot.reply(message, 'Already playing…');
             return;
         }
 
         Spotify.play(function(){
-            bot.reply(message, 'Resuming playback...');
+            bot.reply(message, 'Resuming playback…');
         });
     });
 });
@@ -267,7 +267,7 @@ controller.hears(playURIRegex,'direct_message,direct_mention,mention', function(
 
     playTrack(uri).
     then(ok => {
-        addReaction(message, '+1');
+        addReaction(message, 'arrow_forward');
     });
 });
 
@@ -283,7 +283,7 @@ controller.hears(playTypeRegex,'direct_message,direct_mention,mention', function
         if(results[type+'s'].items.length > 0) {
             return playTrack(results[type+'s'].items[0].uri).
                 then(ok => {
-                    addReaction(message, '+1');
+                    addReaction(message, 'arrow_forward');
                 });
         }
         else {
@@ -300,13 +300,13 @@ controller.hears(['toggle playback'],'direct_message,direct_mention,mention,ambi
     Spotify.getState(function(err, state){
         if(state.state != 'playing') {
             Spotify.play(function(){
-                bot.reply(message, 'Resuming playback...');
+                bot.reply(message, 'Resuming playback…');
             });
             return;
         }
 
         Spotify.pause(function(){
-            bot.reply(message, 'Pausing playback...');
+            bot.reply(message, 'Pausing playback…');
         });
     });
 });
@@ -314,12 +314,12 @@ controller.hears(['toggle playback'],'direct_message,direct_mention,mention,ambi
 controller.hears(['^stop$','^pause$','^shut up$'],'direct_message,direct_mention,mention', function(bot, message) {
     Spotify.getState(function(err, state){
         if(state.state != 'playing') {
-            bot.reply(message, 'Not currently playing...');
+            bot.reply(message, 'Not currently playing…');
             return;
         }
 
         Spotify.pause(function(){
-            bot.reply(message, 'Pausing playback...');
+            bot.reply(message, 'Pausing playback…');
         });
     });
 });
@@ -354,7 +354,7 @@ controller.hears(['quieter( \\d+)?','vol(?:ume)? down( \\d+)?','turn it down( \\
         var volume = state.volume;
 
         if(volume == 0) {
-            bot.reply(message, 'I can\'t go any lower... (my career as a limbo dancer was a short one)');
+            bot.reply(message, 'I can\'t go any lower… (my career as a limbo dancer was a short one)');
             return;
         }
 
@@ -564,7 +564,7 @@ function checkForTrackChange() {
                             lastVolume = state.volume;
                             Spotify.setVolume(1, function(){
                                 bot.say({
-                                    text: `Back soon...`,
+                                    text: `Back soon…`,
                                     channel: channelId
                                 });
                             });
@@ -739,7 +739,7 @@ function formatUptime(uptime) {
 function verifyChannel(channel) {
     if(channel && channel.name && channel.id && setup.channel && channel.name == setup.channel) {
         channelId = channel.id;
-        console.log('** ...chilling out on #' + channel.name);
+        console.log('** …chilling out on #' + channel.name);
         return true;
     }
 
